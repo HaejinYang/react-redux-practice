@@ -1,6 +1,30 @@
 import * as React from 'react';
-
+import {createStore} from 'redux';
+import {Provider, useSelector, useDispatch, connect} from "react-redux";
 import './style.css';
+
+
+const reducer = (state, action) => {
+  if(state === undefined) {
+    return {
+      num: 1,
+    };
+  }
+
+  const newState = {...state};
+
+  switch(action.type) {
+    case 'PLUS':
+      newState.num++;
+      break;
+    default:
+      throw Error("can not reached");
+  }
+
+  return newState;
+}
+
+const store = createStore(reducer);
 
 export default function App() {
   const [num, setNum] = React.useState(0);
@@ -9,34 +33,37 @@ export default function App() {
     <div id="container">
       Root : {num}
       <div id="grid">
-        <Left1 num={num} />
-        <Right1 onIncrease={() => {
-          setNum(num + 1);
-        }}/>
+        <Provider store={store}>
+          <Left1/>
+          <Right1/>
+        </Provider>
       </div>
     </div>
   );
 }
 
-const Left1 = ({ num }) => {
+const Left1 = () => {
   return (
     <div>
-      Left1 : {num}
-      <Left2 num={num} />
+      Left1 
+      <Left2/>
     </div>
   );
 };
 
-const Left2 = ({ num }) => {
+const Left2 = () => {
   return (
     <div>
-      Left2 : {num}
-      <Left3 num={num} />
+      Left2
+      <Left3/>
     </div>
   );
 };
 
-const Left3 = ({ num }) => {
+const Left3 = () => {
+  const num = useSelector((state: {num}) => state.num); 
+  // 그리고 매우 중요한 포인트
+  // 이 컴포넌트만 바뀌고 상위 컴포넌트는 렌더링 되지 않는다.
   return (
     <div>
       Left3 : {num}
@@ -44,34 +71,31 @@ const Left3 = ({ num }) => {
   );
 };
 
-const Right1 = (props) => {
+const Right1 = () => {
   return (
     <div>
       Right1
-      <Right2 onIncrease={()=>{
-        props.onIncrease();
-      }}  />
+      <Right2/>
     </div>
   );
 };
 
-const Right2 = (props) => {
+const Right2 = () => {
   return (
     <div>
       Right2
-      <Right3 onIncrease={() => {
-        props.onIncrease();
-      }} />
+      <Right3/>
     </div>
   );
 };
 
-const Right3 = (props) => {
+const Right3 = () => {
+  const dispatch = useDispatch();
   return (
     <div>
       Right3
-      <input type="button" value="1" onClick={() => {
-        props.onIncrease();
+      <input type="button" value="+" onClick={() => {
+        dispatch({type: 'PLUS'});
       }}></input>
     </div>
   );
